@@ -121,14 +121,14 @@ if st.button("Evaluate Resume"):
                 st.subheader("Verdict")
                 st.markdown(f"<div class='verdict-box {verdict_class}'>{verdict.title()}</div>", unsafe_allow_html=True)
 
-                # Matched skills
+                # Matched Skills
                 matched_skills = result.get("matched_skills", [])
                 if matched_skills:
                     st.subheader("Matched Skills")
                     for skill in matched_skills:
                         st.markdown(f"<div class='matched-skill'>{skill}</div>", unsafe_allow_html=True)
 
-                # Missing skills
+                # Missing Skills
                 missing_skills = result.get("missing_skills", [])
                 st.subheader("Missing Skills/Elements")
                 if missing_skills:
