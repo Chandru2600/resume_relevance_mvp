@@ -8,7 +8,6 @@ BACKEND_URL = "https://resume-relevance-mvp.onrender.com"  # Your backend URL
 
 # ----------------------------
 # Custom CSS
-# ----------------------------
 st.markdown("""
 <style>
 .stApp {background: linear-gradient(135deg, #f75252 1%, #f7cc74 100%);}
