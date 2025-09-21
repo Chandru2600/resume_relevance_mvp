@@ -6,7 +6,7 @@ import re
 
 app = FastAPI()
 
-# In-memory storage of JDs
+# In-memory JD storage
 JDS = {}
 
 # ----------------------------
@@ -25,30 +25,39 @@ class ResumeInput(BaseModel):
 # ----------------------------
 def extract_skills_from_jd(jd_text: str) -> List[str]:
     """
-    Extract skills from JD text without using bullets.
-    Only considers lines under Skills/Requirements/Qualifications sections.
+    Extract skills from JD text regardless of formatting.
+    Handles:
+    - Bullets (-, *, •)
+    - Colon-separated sections (Programming: Python, C)
+    - Inline sentences (Skills required: Python, Django)
     """
     skills = []
-    capture = False
+
     for line in jd_text.splitlines():
         line = line.strip()
-        if re.search(r"skills|requirements|qualifications", line, re.IGNORECASE):
-            capture = True
+        if not line:
             continue
-        if capture:
-            if line == "":
-                break
-            # Remove bullets if any, then split by comma or 'and'
-            line_clean = re.sub(r"^[-*•]\s*", "", line)
-            parts = [s.strip().lower() for s in re.split(r",|\band\b", line_clean) if s.strip()]
-            skills.extend(parts)
+
+        # Remove bullets
+        line = re.sub(r"^[-*•]\s*", "", line)
+
+        # Extract after colon if exists
+        if ':' in line:
+            parts = line.split(":", 1)
+            line = parts[1].strip()
+
+        # Split by comma or 'and'
+        line_skills = [s.strip().lower() for s in re.split(r",|\band\b", line) if s.strip()]
+        skills.extend(line_skills)
+
+    # Remove duplicates
     return list(set(skills))
 
 def extract_skills_from_resume(resume_text: str, jd_skills: List[str]) -> List[str]:
     """
     Match only JD-extracted skills in resume text
     """
-    resume_text_clean = re.sub(r"[^\w\s]", "", resume_text.lower())  # remove punctuation
+    resume_text_clean = re.sub(r"[^\w\s]", "", resume_text.lower())
     matched = [skill for skill in jd_skills if skill in resume_text_clean]
     return matched
 
@@ -58,7 +67,7 @@ def compute_relevance(jd_text: str, resume_text: str):
     missing_skills = list(set(jd_skills) - set(matched_skills))
     score = int(len(matched_skills) / len(jd_skills) * 100) if jd_skills else 0
 
-    # Verdict based on 4-level scale
+    # 4-level verdict
     if score >= 90:
         verdict = "Excellent"
     elif score >= 80:
