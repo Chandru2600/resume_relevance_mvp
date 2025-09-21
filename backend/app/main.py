@@ -23,42 +23,43 @@ class ResumeInput(BaseModel):
 # ----------------------------
 # Helper functions
 # ----------------------------
+def normalize(text: str) -> str:
+    """Lowercase, remove punctuation, normalize spaces"""
+    text = text.lower()
+    text = re.sub(r"[^\w\s]", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
 def extract_skills_from_jd(jd_text: str) -> List[str]:
     """
-    Extract skills from JD text regardless of formatting.
-    Handles:
+    Extract skills from JD regardless of format:
     - Bullets (-, *, •)
-    - Colon-separated sections (Programming: Python, C)
-    - Inline sentences (Skills required: Python, Django)
+    - Colon-separated (Programming: Python, Java)
+    - Inline sentences
     """
     skills = []
-
     for line in jd_text.splitlines():
         line = line.strip()
         if not line:
             continue
-
-        # Remove bullets
-        line = re.sub(r"^[-*•]\s*", "", line)
-
-        # Extract after colon if exists
+        line = re.sub(r"^[-*•]\s*", "", line)  # remove bullets
         if ':' in line:
-            parts = line.split(":", 1)
-            line = parts[1].strip()
-
+            line = line.split(":", 1)[1].strip()  # text after colon
         # Split by comma or 'and'
-        line_skills = [s.strip().lower() for s in re.split(r",|\band\b", line) if s.strip()]
+        line_skills = [s.strip() for s in re.split(r",|\band\b", line) if s.strip()]
         skills.extend(line_skills)
-
-    # Remove duplicates
-    return list(set(skills))
+    return list(set(skills))  # remove duplicates
 
 def extract_skills_from_resume(resume_text: str, jd_skills: List[str]) -> List[str]:
     """
-    Match only JD-extracted skills in resume text
+    Match only JD-listed skills in resume text
     """
-    resume_text_clean = re.sub(r"[^\w\s]", "", resume_text.lower())
-    matched = [skill for skill in jd_skills if skill in resume_text_clean]
+    resume_clean = normalize(resume_text)
+    matched = []
+    for skill in jd_skills:
+        skill_clean = normalize(skill)
+        if skill_clean in resume_clean:  # substring match
+            matched.append(skill)
     return matched
 
 def compute_relevance(jd_text: str, resume_text: str):
