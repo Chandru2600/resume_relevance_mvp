@@ -4,7 +4,8 @@ from io import BytesIO
 import pdfplumber
 import docx
 
-BACKEND_URL = "http://127.0.0.1:8000"
+BACKEND_URL = "https://resume-relevance-mvp.onrender.com"
+
 
 # ----------------------------
 # Light background
