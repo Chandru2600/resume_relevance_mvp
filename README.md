@@ -1,14 +1,38 @@
-# Resume Relevance MVP (FastAPI + Streamlit)
+# Resume Relevance MVP
 
-## Prereqs
-- Python 3.9+ (recommended 3.10)
-- pip
+Automated Resume Evaluation Tool that scores resumes against Job Descriptions (JD) by analyzing skills. Outputs Relevance Score, Verdict, and Missing Skills/Elements.
 
-## Setup & run backend
-1. Open terminal:
-```bash
+## Project Structure
+
+- **backend/** — FastAPI backend  
+- **frontend/** — Streamlit frontend  
+
+## Features
+
+- Extracts only the Skills section from the JD
+- Evaluates resumes in PDF or DOCX format
+- Outputs Relevance Score, Verdict, and Missing Skills/Elements
+
+## Installation
+
+### Clone the repository
+
+##Setup Backend
 cd backend
 python -m venv .venv
-source .venv/bin/activate    # Windows: .venv\\Scripts\\activate
+.venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload
+
+##Setup Frontend
+cd ../frontend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+streamlit run streamlit_app.py
+
+##Usage
+1.Enter or paste the Job Description (JD)
+2.Upload the resume (PDF/DOCX)
+3.Click Evaluate Resume
+4.View Relevance Score, Verdict, and Missing Skills/Elements
