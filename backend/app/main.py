@@ -25,8 +25,8 @@ class ResumeInput(BaseModel):
 # ----------------------------
 def extract_skills_from_jd(jd_text: str) -> List[str]:
     """
-    Extract skills from JD text.
-    Supports bullet points (-, *, •) and comma-separated lists under Skills/Requirements/Qualifications
+    Extract skills from JD text without using bullets.
+    Only considers lines under Skills/Requirements/Qualifications sections.
     """
     skills = []
     capture = False
@@ -38,14 +38,10 @@ def extract_skills_from_jd(jd_text: str) -> List[str]:
         if capture:
             if line == "":
                 break
-            # bullet points
-            bullet_match = re.match(r"[-*•]\s*(.+)", line)
-            if bullet_match:
-                skills.append(bullet_match.group(1).strip().lower())
-            else:
-                # comma-separated values
-                parts = [s.strip().lower() for s in re.split(r",|\band\b", line) if s.strip()]
-                skills.extend(parts)
+            # Remove bullets if any, then split by comma or 'and'
+            line_clean = re.sub(r"^[-*•]\s*", "", line)
+            parts = [s.strip().lower() for s in re.split(r",|\band\b", line_clean) if s.strip()]
+            skills.extend(parts)
     return list(set(skills))
 
 def extract_skills_from_resume(resume_text: str, jd_skills: List[str]) -> List[str]:
