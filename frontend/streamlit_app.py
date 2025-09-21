@@ -6,21 +6,72 @@ import docx
 
 BACKEND_URL = "https://resume-relevance-mvp.onrender.com"
 
-
 # ----------------------------
-# Light background
+# Theming and Custom CSS for UI
 # ----------------------------
 st.markdown("""
     <style>
     .stApp {
-        background-color: #545252;
+        background: linear-gradient(135deg, #f75252 1%, #f7cc74  100%);
     }
-    .stButton>button {
-        background-color: #4CAF50;
-        color: white;
-        font-size: 16px;
-        padding: 10px 20px;
+    [data-testid="stHeader"] {background-color: transparent;}
+    .blue-gradient {
+        background: linear-gradient(90deg, #4fc3f7 0%, #b2ebf2 100%);
+        color: #1a237e !important;
+        font-weight: bold;
+        padding: 10px 18px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        font-size: 18px;
+    }
+    .green-gradient {
+        background: linear-gradient(90deg, #A6F1A6 0%, #80CBC4 100%);
+        color: #005B3E !important;
+        font-weight: bold;
+        padding: 10px 18px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        font-size: 18px;
+    }
+    .score-box {
+        background: linear-gradient(90deg, #80deea 0%, #a5d6a7 100%);
+        color: #004d40;
+        padding: 10px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 22px;
+        text-align: center;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.07);
+        margin-bottom: 12px;
+    }
+    .verdict-box.good {
+        background: #d2ffd2;
+        color: #388e3c;
+        border-left: 6px solid #81c784;
+        padding: 10px 18px;
         border-radius: 8px;
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+    .verdict-box.bad {
+        background: #ffeaea;
+        color: #d32f2f;
+        border-left: 6px solid #e57373;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+    .missing-skill {
+        background: #fff3e0;
+        color: #e65100;
+        border-left: 5px solid #FFD54F;
+        padding: 8px 16px;
+        border-radius: 7px;
+        font-weight: bold;
+        margin-bottom: 7px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -31,13 +82,15 @@ st.title("Automated Resume Relevance")
 # JD Section
 # ----------------------------
 st.header("Step 1: Enter Job Description (JD)")
+st.markdown('<div class="blue-gradient">Please provide the job details and requirements.</div>', unsafe_allow_html=True)
 title = st.text_input("Job Title")
-jd_text = st.text_area("Paste Job Description here (use 'Skills' section)")
+jd_text = st.text_area("Paste Job Description here")
 
 # ----------------------------
 # Resume Section
 # ----------------------------
 st.header("Step 2: Upload Resume")
+st.markdown('<div class="green-gradient">Upload your PDF or DOCX resume file.</div>', unsafe_allow_html=True)
 resume_file = st.file_uploader("Upload Resume (PDF/DOCX)", type=["pdf", "docx"])
 
 # ----------------------------
@@ -64,14 +117,14 @@ def extract_resume_text(file):
 # ----------------------------
 if st.button("Evaluate Resume"):
     if not title:
-        st.error("Enter Job Title")
+        st.error("🚩 Please enter Job Title.")
     elif not jd_text.strip():
-        st.error("Enter Job Description text")
+        st.error("🚩 Please paste Job Description text.")
     elif resume_file is None:
-        st.error("Upload Resume file")
+        st.error("🚩 Please upload your resume file.")
     else:
         # 1️⃣ Send JD to backend
-        with st.spinner("Sending JD text..."):
+        with st.spinner("🔄 Sending JD..."):
             jd_resp = requests.post(
                 f"{BACKEND_URL}/jd",
                 json={"title": title, "jd": jd_text}
@@ -83,11 +136,11 @@ if st.button("Evaluate Resume"):
             st.success(f"JD processed successfully! JD ID: {jd_id}")
 
             # 2️⃣ Extract resume text locally
-            with st.spinner("Extracting resume text..."):
+            with st.spinner("🔎 Extracting resume text..."):
                 resume_text = extract_resume_text(resume_file)
 
             # 3️⃣ Send resume for evaluation
-            with st.spinner("Evaluating resume..."):
+            with st.spinner("📊 Evaluating resume..."):
                 resume_resp = requests.post(
                     f"{BACKEND_URL}/evaluate_resume",
                     json={"jd_id": jd_id, "resume_text": resume_text}
@@ -97,7 +150,7 @@ if st.button("Evaluate Resume"):
                 st.error(f"Error evaluating resume: {resume_resp.text}")
             else:
                 result = resume_resp.json()
-                st.success("Resume evaluated successfully!")
+                st.success("✅ Resume evaluated successfully!")
 
                 # ----------------------------
                 # Display Relevance Score
@@ -105,7 +158,7 @@ if st.button("Evaluate Resume"):
                 score = result.get("score", 0)
                 st.subheader("Relevance Score")
                 st.markdown(
-                    f"<div style='color:#ffffff; background-color:#4CAF50; padding:10px; border-radius:6px; font-weight:bold; font-size:18px'>{score} / 100</div>",
+                    f"<div class='score-box'>{score} / 100</div>",
                     unsafe_allow_html=True
                 )
 
@@ -113,10 +166,10 @@ if st.button("Evaluate Resume"):
                 # Display Verdict
                 # ----------------------------
                 verdict = result.get("verdict", "N/A")
-                verdict_color = "#00529B" if verdict == "Good fit" else "#D8000C"
+                verdict_html_class = "good" if verdict == "Good fit" else "bad"
                 st.subheader("Verdict")
                 st.markdown(
-                    f"<div style='color:{verdict_color}; background-color:#BDE5F8; padding:10px; border-radius:6px; font-weight:bold; font-size:18px'>{verdict}</div>",
+                    f"<div class='verdict-box {verdict_html_class}'>{verdict}</div>",
                     unsafe_allow_html=True
                 )
 
@@ -128,8 +181,8 @@ if st.button("Evaluate Resume"):
                 if missing_skills:
                     for skill in missing_skills:
                         st.markdown(
-                            f"<div style='color:#D8000C; background-color:#FFDDDD; padding:8px; margin:4px 0; border-radius:6px; font-weight:bold'>{skill}</div>",
+                            f"<div class='missing-skill'>{skill}</div>",
                             unsafe_allow_html=True
                         )
                 else:
-                    st.success("All required skills are present! 🎉")
+                    st.success("🎉 All required skills are present!")
