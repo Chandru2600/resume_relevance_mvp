@@ -4,7 +4,7 @@ from io import BytesIO
 import pdfplumber
 import docx
 
-BACKEND_URL = "https://resume-relevance-mvp.onrender.com"  # Your backend URL
+BACKEND_URL = "https://resume-relevance-mvp.onrender.com"
 
 # ----------------------------
 # Custom CSS
@@ -109,18 +109,17 @@ if st.button("Evaluate Resume"):
                 st.markdown(f"<div class='score-box'>{score} / 100</div>", unsafe_allow_html=True)
 
                 # Verdict
-                verdict = result.get("verdict", "N/A")
-                if verdict == "Excellent":
+                verdict = result.get("verdict", "N/A").lower()
+                verdict_class = "bad"
+                if verdict == "excellent":
                     verdict_class = "excellent"
-                elif verdict == "Very Good":
+                elif verdict == "very good":
                     verdict_class = "verygood"
-                elif verdict == "Good":
+                elif verdict == "good":
                     verdict_class = "good"
-                else:
-                    verdict_class = "bad"
 
                 st.subheader("Verdict")
-                st.markdown(f"<div class='verdict-box {verdict_class}'>{verdict}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='verdict-box {verdict_class}'>{verdict.title()}</div>", unsafe_allow_html=True)
 
                 # Matched skills
                 matched_skills = result.get("matched_skills", [])
