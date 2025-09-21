@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+python-multipart
+python-docx
+docx2txt
+PyMuPDF
+fuzzywuzzy
+python-Levenshtein
+requests
